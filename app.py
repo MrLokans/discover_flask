@@ -26,6 +26,7 @@ def login_required(func):
 @app.route('/')
 @login_required
 def home():
+    posts = []
     try:
         g.db = connect_db()
         cur = g.db.execute('select * from posts')
