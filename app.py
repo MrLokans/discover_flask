@@ -1,12 +1,22 @@
 import os
 from functools import wraps
-import sqlite3
 
-from flask import Flask, g, flash, render_template, request, url_for, session, redirect
+from flask import (
+    Flask, g, flash, render_template, request,
+    url_for, session, redirect
+)
+
+from flask.ext.sqlalchemy import SQLAlchemy
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(32)
-app.database = "app.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+
+db = SQLAlchemy(app)
+
+from models import *
+
 
 USERNAME = 'admin'
 PASSWORD = 'password'
@@ -26,14 +36,7 @@ def login_required(func):
 @app.route('/')
 @login_required
 def home():
-    posts = []
-    try:
-        g.db = connect_db()
-        cur = g.db.execute('select * from posts')
-        posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
-        g.db.close()
-    except sqlite3.OperationalError:
-        flash("Database is not set up.")
+    posts = db.session.query(BlogPost).all()
     return render_template('index.html', posts=posts)
 
 
@@ -64,8 +67,8 @@ def logout():
     return redirect(url_for('welcome'))
 
 
-def connect_db():
-    return sqlite3.connect(app.database)
+# def connect_db():
+#     return sqlite3.connect(app.database)
 
 if __name__ == '__main__':
     app.run(debug=True)
