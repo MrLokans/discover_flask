@@ -67,8 +67,5 @@ def logout():
     return redirect(url_for('welcome'))
 
 
-# def connect_db():
-#     return sqlite3.connect(app.database)
-
 if __name__ == '__main__':
     app.run()
